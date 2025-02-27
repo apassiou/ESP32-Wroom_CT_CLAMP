@@ -7,7 +7,7 @@
 Resistors can be any value betwen 10k - 250k as long as same value is used on for both resistors. CT Clamps share the same divider and shifting circuit, as well as the stabilizing capacitor.
 Be careful  which GPIO pins you use. The ones chosen here are safe, but a lot of the pins are used for other functions within the ESP32.
 
-![circuit](https://github.com/user-attachments/assets/80992475-9f74-4d90-b58b-07a2f142213a)
+![circuit](https://github.com/user-attachments/assets/072a0edc-f707-4e43-ae33-e87134375335)
 
 The idea:
 
