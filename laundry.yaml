@@ -1,0 +1,163 @@
+#Written by apassiou
+#Version 02.27.2025
+
+esphome:
+  name: esp32-laundry-monitor
+  friendly_name: "ESP32 Laundry Monitor"
+  platformio_options:
+    board_build.flash_mode: dio  
+  on_boot: #Pull LEDS low on boot so that they dont glow
+    priority: -100
+    then:
+      - output.turn_on: led_blue #start up LED sequence to signify startup when plugged in
+      - delay: 1s
+      - output.turn_off: led_blue
+      - output.turn_on: led_red
+      - delay: 1s
+      - output.turn_off: led_red
+      - output.turn_on: led_blue
+      - delay: 500ms
+      - output.turn_off: led_blue
+
+esp32:
+  board: esp32dev  # Change based on your specific ESP32-WROOM board
+  framework:
+    type: esp-idf  # Use `arduino` if preferred
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+
+# Enable logging
+logger:
+
+# Uncomment if you want to use the ESPHome API
+api:
+
+ota:
+ platform: esphome
+
+web_server:
+
+# Define LEDs on GPIO4 (blue) and GPIO17 (red)
+output:
+  - platform: gpio
+    pin: GPIO4
+    id: led_blue
+
+  - platform: gpio
+    pin: GPIO17
+    id: led_red
+
+#Status
+text_sensor:
+  - platform: template
+    name: "Washing Machine Status"
+    icon: "mdi:washing-machine"
+    id: washer_status
+    lambda: |-
+      if (id(washer_current).state >= 0.20) {
+        return {"Washing"};
+      } else {
+        return {"Idle"};
+      }
+
+  - platform: template
+    name: "Dryer Status"
+    icon: "mdi:tumble-dryer"
+    id: dryer_status
+    lambda: |-
+      if (id(dryer_current).state >= 0.50) {
+        return {"Drying"};
+      } else {
+        return {"Idle"};
+      }
+
+sensor: #Washing Machine
+  - platform: ct_clamp
+    sensor: adc_sensor_washer
+    name: "Washing Machine Current"
+    unit_of_measurement: "A"
+    icon: "mdi:lightning-bolt-circle"
+    id: washer_current
+    update_interval: 7s
+    filters:
+      - sliding_window_moving_average: 
+         window_size: 9 #keep roughly 1 min average
+         send_every: 1
+      - calibrate_linear:
+          method: exact
+          datapoints:
+          - 0.000 -> 0.000
+          - 0.004 -> 0.000
+          - 0.005 -> 0.040
+          - 0.013 -> 0.330
+          - 0.015 -> 0.360
+          - 0.018 -> 0.450
+          - 0.025 -> 0.630
+          - 0.137 -> 3.540
+          - 0.139 -> 3.650
+          - 0.171 -> 4.320
+          - 0.207 -> 4.820
+      - lambda: |-
+            return x;      
+    on_value:
+      then: #LED on if Amperage is > than value specified
+        - lambda: |-
+            if (x > 0.20) {
+              id(led_blue).turn_on();
+            } else {
+              id(led_blue).turn_off();
+            }     
+
+  - platform: ct_clamp #Dryer
+    sensor: adc_sensor_dryer
+    name: "Dryer Current"
+    unit_of_measurement: "A"
+    icon: "mdi:lightning-bolt-circle"
+    id: dryer_current
+    update_interval: 14s
+    filters:
+      - sliding_window_moving_average: 
+         window_size: 4 #keep roughly 1 min average
+         send_every: 1
+      - calibrate_linear:
+          method: exact
+          datapoints:
+          - 0.000 -> 0.000
+          - 0.004 -> 0.000
+          - 0.005 -> 0.040
+          - 0.013 -> 0.330
+          - 0.015 -> 0.360
+          - 0.018 -> 0.450
+          - 0.025 -> 0.630
+          - 0.137 -> 3.540
+          - 0.139 -> 3.650
+          - 0.171 -> 4.320
+          - 0.207 -> 4.820
+      - lambda: |-
+            return x;      
+    on_value:
+      then: #LED on if Amperage is > than value specified
+        - lambda: |-
+            if (x > 0.5) {
+              id(led_red).turn_on();
+            } else {
+              id(led_red).turn_off();
+            }     
+
+  
+  #ADCs for ct_clamp to use
+  - platform: adc
+    pin: GPIO34
+    id: adc_sensor_washer
+    update_interval: never #Using ct_clamp for everything, this is not needed enable for debug maybe
+    unit_of_measurement: "V"
+    attenuation: auto
+
+  - platform: adc
+    pin: GPIO36
+    id: adc_sensor_dryer
+    update_interval: never
+    unit_of_measurement: "V"
+    attenuation: auto
