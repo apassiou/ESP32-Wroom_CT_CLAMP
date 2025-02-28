@@ -1,23 +1,41 @@
-#Written by apassiou
-#Version 02.27.2025
+#Written by apassiou v02.27.2025
 
+#init
 esphome:
   name: esp32-laundry-monitor
   friendly_name: "ESP32 Laundry Monitor"
   platformio_options:
-    board_build.flash_mode: dio  
+    board_build.flash_mode: dio  # Common setting for ESP32-WROOM
   on_boot: #Pull LEDS low on boot so that they dont glow
-    priority: -100
+    priority: 100
     then:
-      - output.turn_on: led_blue #start up LED sequence to signify startup when plugged in
-      - delay: 1s
-      - output.turn_off: led_blue
+      - repeat: #start up LED sequence to signify startup when plugged in
+          count: 3
+          then:
+          - delay: 500ms
+          - output.turn_on: led_blue 
+          - delay: 500ms
+          - output.turn_off: led_blue
+
+      - output.turn_on: led_blue
+
+      - repeat:
+          count: 3
+          then:
+          - delay: 500ms
+          - output.turn_on: led_red
+          - delay: 500ms
+          - output.turn_off: led_red
+
       - output.turn_on: led_red
       - delay: 1s
-      - output.turn_off: led_red
-      - output.turn_on: led_blue
-      - delay: 500ms
       - output.turn_off: led_blue
+      - output.turn_off: led_red
+
+      # Restore values to variables
+      - lambda: |-
+          id(washer_threshold) = id(washer_set_value).state;
+          id(dryer_threshold) = id(dryer_set_value).state;
 
 esp32:
   board: esp32dev  # Change based on your specific ESP32-WROOM board
@@ -39,6 +57,16 @@ ota:
 
 web_server:
 
+# Define tresholds for when to consider Washer/Dryer as running
+globals:
+  - id: washer_threshold
+    type: float
+    initial_value: '0.20' #default, but can be changed in GUI
+
+  - id: dryer_threshold
+    type: float
+    initial_value: '0.50' #default, but can be changed in GUI
+
 # Define LEDs on GPIO4 (blue) and GPIO17 (red)
 output:
   - platform: gpio
@@ -49,28 +77,62 @@ output:
     pin: GPIO17
     id: led_red
 
-#Status
-text_sensor:
+#Ability to change thresholds in GUI
+number:
+  - platform: template
+    name: "Washing Machine Threshold (Default 0.2A)"
+    id: washer_set_value
+    icon: "mdi:sine-wave"
+    initial_value: '0.20'  # Set an initial threshold value
+    min_value: '0.1'
+    max_value: '12.0'
+    step: '0.01'
+    optimistic: true 
+    restore_value: true # Persists through reboots
+    mode: box
+    unit_of_measurement: 'A'
+    set_action:
+      - lambda: |-
+          id(washer_threshold) = x;
+
+  - platform: template
+    name: "Dryer Threshold (Default 0.5A)"
+    id: dryer_set_value
+    icon: "mdi:sine-wave"
+    initial_value: '0.50'  # Set an initial threshold value
+    min_value: '0.1'
+    max_value: '12.0'
+    step: '0.01'
+    optimistic: true 
+    restore_value: true 
+    mode: box
+    unit_of_measurement: 'A'
+    set_action:
+      - lambda: |-
+          id(dryer_threshold) = x;
+
+#Home assistant states integration
+binary_sensor:
   - platform: template
     name: "Washing Machine Status"
     icon: "mdi:washing-machine"
-    id: washer_status
+    id: washer_running
     lambda: |-
-      if (id(washer_current).state >= 0.20) {
-        return {"Washing"};
+      if (id(washer_current).state >= id(washer_threshold)) {
+        return true;
       } else {
-        return {"Idle"};
+        return false;
       }
 
   - platform: template
     name: "Dryer Status"
     icon: "mdi:tumble-dryer"
-    id: dryer_status
+    id: dryer_running
     lambda: |-
-      if (id(dryer_current).state >= 0.50) {
-        return {"Drying"};
+      if (id(dryer_current).state >= id(dryer_threshold)) {
+        return true;
       } else {
-        return {"Idle"};
+        return false;
       }
 
 sensor: #Washing Machine
@@ -104,7 +166,7 @@ sensor: #Washing Machine
     on_value:
       then: #LED on if Amperage is > than value specified
         - lambda: |-
-            if (x > 0.20) {
+            if (x > id(washer_threshold)) {
               id(led_blue).turn_on();
             } else {
               id(led_blue).turn_off();
@@ -140,12 +202,11 @@ sensor: #Washing Machine
     on_value:
       then: #LED on if Amperage is > than value specified
         - lambda: |-
-            if (x > 0.5) {
+            if (x > id(dryer_threshold)) {
               id(led_red).turn_on();
             } else {
               id(led_red).turn_off();
             }     
-
   
   #ADCs for ct_clamp to use
   - platform: adc
