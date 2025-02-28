@@ -1,5 +1,23 @@
 # ESP32-Wroom_CT_CLAMP
-2 CT Clamp setup for ESP32 Wroom to monitor Washer Dryer for Home Assistant automation using ESPhome
+2 CT Clamp setup for ESP32 Wroom to monitor Washer and Dryer for Home Assistant automation using ESPhome
+
+## Parts List  
+
+### Required Components  
+- **2x CT Clamps** (30A/1V used, but 10A/1V or 20A/1V will also work)  
+  - If using a CT that outputs mA, you will need to add a burden resistor to convert it to a 1V range.  
+- **2x Resistors** (must be the same value, any between **10kΩ to 250kΩ** will work)  
+- **1x Electrolytic (polarized) Capacitor**  
+  - **10µF** works well, but anything between **1µF and 10µF** is fine.  
+- **1x ESP32** with at least **2 analog pins**  
+  - **ESP32-Wroom** is used here, but other ESP32 variants will also work.  
+
+### Optional Components  
+- **2x LEDs** (any color)  
+  - You will need to determine the correct resistor values. Values for **blue and red LEDs** are provided by the schematic.  
+- **1x Case** to house your creation.  
+
+
 
 ![Photo Feb 27 2025, 05 08 08](https://github.com/user-attachments/assets/3aeb0cec-b630-49df-a5b0-3be955b8340d)
 
