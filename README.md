@@ -16,7 +16,7 @@
 - **2x LEDs** (any color)  
   - You will need to determine the correct resistor values. Values for **blue and red LEDs** are provided by the schematic.  
 - **1x Case** to house your creation.  
-
+- **1x 5v Power Supply** to power the board (you can power it either via USB or via wiring to 5v/GND pins)
 
 
 ![Photo Feb 27 2025, 05 08 08](https://github.com/user-attachments/assets/3aeb0cec-b630-49df-a5b0-3be955b8340d)
