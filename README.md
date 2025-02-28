@@ -4,7 +4,7 @@
 ## Parts List  
 
 ### Required Components  
-- **2x CT Clamps** (30A/1V used, but 10A/1V or 20A/1V will also work)  
+- **2x CT Clamps** (30A/1V used (model SCT013), but 10A/1V or 20A/1V will also work)  
   - If using a CT that outputs mA, you will need to add a burden resistor to convert it to a 1V range.  
 - **2x Resistors** (must be the same value, any between **10kΩ to 250kΩ** will work)  
 - **1x Electrolytic (polarized) Capacitor**  
