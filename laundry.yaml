@@ -1,9 +1,9 @@
-#Written by apassiou v02.27.2025
+#Written by apassiou v03.02.2025
 
 #init
 esphome:
   name: esp32-laundry-monitor
-  friendly_name: "ESP32 Laundry Monitor"
+  friendly_name: "ESP32 Laundry Monitor v03.02.2025"
   platformio_options:
     board_build.flash_mode: dio  # Common setting for ESP32-WROOM
   on_boot: #Pull LEDS low on boot so that they dont glow
@@ -52,10 +52,10 @@ logger:
 # Uncomment if you want to use the ESPHome API
 api:
 
-ota:
- platform: esphome
-
 web_server:
+
+ota:
+  - platform: esphome
 
 # Define tresholds for when to consider Washer/Dryer as running
 globals:
@@ -69,13 +69,32 @@ globals:
 
 # Define LEDs on GPIO4 (blue) and GPIO17 (red)
 output:
-  - platform: gpio
+  - platform: ledc
     pin: GPIO4
     id: led_blue
+    frequency: 1000 Hz
+    inverted: false
 
-  - platform: gpio
+  - platform: ledc
     pin: GPIO17
     id: led_red
+    frequency: 1000 Hz
+    inverted: false
+
+light:
+  - platform: monochromatic
+    name: "Blue LED"
+    output: led_blue
+    id: blue_led
+    internal: true
+    restore_mode: ALWAYS_OFF
+
+  - platform: monochromatic
+    name: "Red LED"
+    output: led_red
+    id: red_led
+    internal: true
+    restore_mode: ALWAYS_OFF
 
 #Ability to change thresholds in GUI
 number:
@@ -149,25 +168,26 @@ sensor: #Washing Machine
          send_every: 1
       - calibrate_linear:
           method: exact
-          datapoints:
+          datapoints: #Confirmed values were taken on actual Washer/Dryer, rest were takes with other testing
           - 0.000 -> 0.000
-          - 0.004 -> 0.000
-          - 0.005 -> 0.040
-          - 0.013 -> 0.330
-          - 0.015 -> 0.360
-          - 0.018 -> 0.450
-          - 0.025 -> 0.630
+          - 0.014 -> 0.000 # Confirmed
+          - 0.018 -> 0.360
+          - 0.024 -> 0.500 # Confirmed
+          - 0.029 -> 0.710 
+          - 0.042 -> 1.000 # Confirmed
+          - 0.044 -> 1.008 # Confirmed
+          - 0.088 -> 2.260 # Confirmed
           - 0.137 -> 3.540
-          - 0.139 -> 3.650
+          - 0.145 -> 3.500
           - 0.171 -> 4.320
-          - 0.207 -> 4.820
+          - 0.226 -> 5.550 # Confirmed - spin cycle
       - lambda: |-
             return x;      
     on_value:
       then: #LED on if Amperage is > than value specified
         - lambda: |-
             if (x > id(washer_threshold)) {
-              id(led_blue).turn_on();
+              id(blue_led).turn_on().set_brightness(0.25).perform();
             } else {
               id(led_blue).turn_off();
             }     
@@ -178,24 +198,21 @@ sensor: #Washing Machine
     unit_of_measurement: "A"
     icon: "mdi:lightning-bolt-circle"
     id: dryer_current
-    update_interval: 14s
+    update_interval: 11s
     filters:
       - sliding_window_moving_average: 
-         window_size: 4 #keep roughly 1 min average
+         window_size: 6 #keep roughly 1 min average
          send_every: 1
       - calibrate_linear:
           method: exact
           datapoints:
           - 0.000 -> 0.000
-          - 0.004 -> 0.000
-          - 0.005 -> 0.040
-          - 0.013 -> 0.330
-          - 0.015 -> 0.360
-          - 0.018 -> 0.450
-          - 0.025 -> 0.630
-          - 0.137 -> 3.540
+          - 0.023 -> 0.000 #Confirmed
+          - 0.025 -> 0.010 #Everything is off state
+          - 0.126 -> 3.480
           - 0.139 -> 3.650
           - 0.171 -> 4.320
+          - 0.180 -> 4.640 #Confirmed
           - 0.207 -> 4.820
       - lambda: |-
             return x;      
@@ -203,7 +220,7 @@ sensor: #Washing Machine
       then: #LED on if Amperage is > than value specified
         - lambda: |-
             if (x > id(dryer_threshold)) {
-              id(led_red).turn_on();
+              id(red_led).turn_on().set_brightness(0.40).perform();
             } else {
               id(led_red).turn_off();
             }     
