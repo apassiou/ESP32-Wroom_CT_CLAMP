@@ -17,7 +17,7 @@
   - You will need to determine the correct resistor values. Values for **blue and red LEDs** are provided by the schematic.  
 - **1x Case** to house your creation.  
 - **1x 5v Power Supply** to power the board (you can power it either via USB or via wiring to 5v/GND pins)
-
+- **AHT10 board** to provide temperature and humidity for the area
 
 ![Photo Feb 27 2025, 05 08 08](https://github.com/user-attachments/assets/3aeb0cec-b630-49df-a5b0-3be955b8340d)
 
@@ -40,3 +40,10 @@ LEDs are an optional flare, not necessary in any way.
 
 ![ESP32-wroom-pinout](https://github.com/user-attachments/assets/c9cd9af5-96f4-448b-8616-c07357d4b35c)
 
+**Version: 03.20.2025** adds AHT10 to provide humidity and temperature for the area. This version is a separate .yaml file. Note the following differences:
+  - Variant with AHT10 daughter board added (adds Humidity and temperature sensor for the area).
+  - Note, overall design stays the same, however pins got moved around to reduce crosstalk (noise) created by I2C communication.
+  - New Pins used for AHT10: GPIO21, GPIO22 for i2c
+  - LEDs are still on GPIO17(blue) and GPIO4 (red) they were switched
+  - CTClamp moved to GPIO36 and GPIO39
+  - Note that there is something wrong with ESPhome code, and AHT10 boards only work if you set variant as AHT20.
