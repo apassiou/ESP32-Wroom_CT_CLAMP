@@ -21,7 +21,11 @@
 
 ![Photo Feb 27 2025, 05 08 08](https://github.com/user-attachments/assets/3aeb0cec-b630-49df-a5b0-3be955b8340d)
 
+CT Clamp Only Setup:
 ![image](https://github.com/user-attachments/assets/dfd6088e-8c73-4b01-954f-bd02656b928e)
+
+CT Clamp and AHT10 Setup:
+<img width="1249" height="354" alt="image" src="https://github.com/user-attachments/assets/823dab3f-d29b-4047-949b-f2235ff67215" />
 
 ![image](https://github.com/user-attachments/assets/797715c0-7382-4134-af4f-e4ab4e6dd585)
 
