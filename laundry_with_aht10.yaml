@@ -1,8 +1,8 @@
 #Written by apassiou v06.02.2026
 
 #Changelog
-03.20.2025 - Initial release
-06.02.2026 - Increased sampling window from 1 min to 2 min
+#  03.20.2025 - Initial release
+#  06.02.2026 - Increased sampling window from 1 min to 2 min
 
 #init
 esphome:
