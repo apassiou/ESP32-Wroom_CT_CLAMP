@@ -1,9 +1,13 @@
-#Written by apassiou v03.20.2025
+#Written by apassiou v06.02.2026
+
+#Changelog
+03.20.2025 - Initial release
+06.02.2026 - Increased sampling window from 1 min to 2 min
 
 #init
 esphome:
   name: esp32-laundry-monitor
-  friendly_name: "ESP32 Laundry Monitor v03.20.2025"
+  friendly_name: "ESP32 Laundry Monitor v06.02.2026"
   platformio_options:
     board_build.flash_mode: dio  # Common setting for ESP32-WROOM
   on_boot: #Pull LEDS low on boot so that they dont glow
@@ -173,11 +177,11 @@ sensor: #Washing Machine
     update_interval: 7s
     filters:
       - sliding_window_moving_average: 
-         window_size: 9 #keep roughly 1 min average
+         window_size: 18 #keep roughly 2 min average
          send_every: 1
       - calibrate_linear:
           method: exact
-          datapoints: #Confirmed values were taken on actual Washer/Dryer, rest were takes with other testing
+          datapoints: #Confirmed values were taken on actual Washer/Dryer, rest were taken with other testing
           - 0.000 -> 0.000
           - 0.015 -> 0.000 # Confirmed
           - 0.018 -> 0.360
@@ -210,7 +214,7 @@ sensor: #Washing Machine
     update_interval: 11s
     filters:
       - sliding_window_moving_average: 
-         window_size: 6 #keep roughly 1 min average
+         window_size: 12 #keep roughly 2 min average
          send_every: 1
       - calibrate_linear:
           method: exact
